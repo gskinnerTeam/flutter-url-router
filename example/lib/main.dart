@@ -12,17 +12,19 @@ class MyApp extends StatelessWidget {
   bool get authorized => true;
 
   late final router = UrlRouter(
-    url: '/start',
+    url: '/',
     onChanging: (router, newUrl) {
       if (authorized == false) return '/';
       return newUrl;
     },
-    scaffoldBuilder: (router, navigator) {
-      return Row(
-        children: [
-          const SideBar(),
-          Expanded(child: navigator),
-        ],
+    builder: (router, navigator) {
+      return _OuterNavigator(
+        child: Row(
+          children: [
+            const SideBar(),
+            Expanded(child: navigator),
+          ],
+        ),
       );
     },
     onGeneratePages: (router) => [
@@ -33,8 +35,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routeInformationParser: UrlRouter.parser,
+      routeInformationParser: UrlRouteParser(),
       routerDelegate: router,
     );
+  }
+}
+
+class _OuterNavigator extends StatelessWidget {
+  const _OuterNavigator({Key? key, required this.child}) : super(key: key);
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(onGenerateRoute: (_) {
+      return PageRouteBuilder(
+        transitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) {
+          return child;
+        },
+      );
+    });
   }
 }

@@ -6,16 +6,14 @@ An un-opinionated url-based Router implementation (Navigator 2.0).
 ```dart
 late final router = UrlRouter(
   onGeneratePages: (router) => [
-    MaterialPage(child: MainView(router.url)
+    MaterialPage(child: MainView(router.url)),
 ]);
 
 @override
-Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routeInformationParser: UrlRouter.parser,
-      routerDelegate: router,
-    );
-}
+Widget build(BuildContext context) => MaterialApp.router(
+  routeInformationParser: UrlRouteParser(),
+  routerDelegate: router,
+);
 ```
 `UrlRouter` makes no assumptions about your UI layout. How you react to `router.url` is up to you.
 
@@ -28,16 +26,16 @@ Widget build(BuildContext context) {
 ## 🔨 Installation
 ```yaml
 dependencies:
-  url_router: ^0.1.0
+  url_router: ^0.2.0
 ```
 
 ## 🕹️ Usage
 * Declare a `UrlRouter` and implement the `onGeneratePages` method
 * Return a list of `Page` elements that represent your desired navigator stack
-* Implement the optional `onChanging` and `scaffoldBuilder` delegates
+* Implement the optional `onChanging` and `builder` delegates
 ```dart
 late final router = UrlRouter(
-  // The Flutter `Navigator` expects a set of `Page` widgets
+  // The Flutter `Navigator` expects a set of `Page` instances
   onGeneratePages: (router) {
     return [
       // Main view is always present
@@ -54,7 +52,7 @@ late final router = UrlRouter(
     return newUrl;
   },
   // Optional, wrap some outer UI around navigator
-  scaffoldBuilder: (router, navigator) {
+  builder: (router, navigator) {
     return Row(
       children: [ const SideBar(), Expanded(child: navigator) ],
     );
@@ -72,7 +70,7 @@ late final router = UrlRouter(
 | `.push`  | add a segment to the current path   |
 | `.pop`  | remove a segment from the current path  |
 | `.onChanging`  | called before path is changed, allows for protected paths and redirects  |
-| `.queryParams` | access the current query parameters  |
+| `.queryParams` | read / update the current query parameters  |
 
 
 ### Accessing the router
@@ -83,10 +81,10 @@ Access the `UrlRouter` anywhere in your app, using `UrlRouter.of(context)`, or u
 * `context.urlRouter`
 
 ### Outer Scaffolding
-You can use the `scaffoldBuilder` delegate to wrap persistent UI around the underlying `Navigator` widget:
+You can use the `builder` delegate to wrap persistent UI around the underlying `Navigator` widget:
 ```dart
 final router = UrlRouter(
-    scaffoldBuilder: (router, navigator) {
+    builder: (router, navigator) {
       return Row(
         children: [
           SideBar(),
@@ -97,10 +95,12 @@ final router = UrlRouter(
 ```
 
 ### Handling full-screen modals
-When using scaffolding around the Navigator, it is common to want to show dialogs and bottom sheets that sit above that scaffolding. This is commonly handled by injecting a second Navigator, above the one that is handled by the router:
+When using UI around the `Navigator`, like title-bars or side-bars, it is common to want to show dialogs and bottom sheets that sit above that UI.
+
+This is most easily solved by adding a second `Navigator`, above the one that is handled by the router.
 ```dart
 final router = UrlRouter(
-    scaffoldBuilder: (router, navigator) {
+    builder: (router, navigator) {
       return Navigator(
         onGenerateRoute: (_) {
           return PageRouteBuilder(
@@ -114,9 +114,13 @@ final router = UrlRouter(
 ```
 
 ### Using custom Navigator(s)
-From within the `scaffoldBuilder` you can ignore the `Widget navigator` parameter, and instead provide one or more navigators or sub-routers lower in the widget tree.
+To provide a fully custom navigation implementation ignore the `Widget navigator` parameter from within the `builder` delegate:
+```
+UrlRouter(builder: (router, navigator) => MyApp());
+```
+`UrlRouter` at this point would be responsible only for reading and writing location, and calling `builder` whenever it changes.
 
-`UrlRouter` at this point would be responsible only for reading and writing location, and calling `scaffoldBuilder` whenever it changes.
+`MyApp` would be responsible for setting up a nested Navigator, or otherwise responding to `router.url`.
 
  ## 🐞 Bugs/Requests
 

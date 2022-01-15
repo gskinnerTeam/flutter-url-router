@@ -1,20 +1,26 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:url_router/url_router.dart';
 
 class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigatorRouterDelegateMixin {
-  UrlRouter({String url = '/', required this.onGeneratePages, this.onPopPage, this.onChanging, this.scaffoldBuilder}) {
+  UrlRouter({String url = '/', this.onGeneratePages, this.builder, this.onPopPage, this.onChanging}) {
     _initialUrl = url;
+    assert(onGeneratePages != null || builder != null,
+        'UrlRouter expects you to implement `builder` or `onGeneratePages` (or both)');
   }
-
-  static UrlRouteParser parser = UrlRouteParser();
 
   /// Enable UrlRouter.of(context) lookup
   static UrlRouter of(BuildContext context) =>
       (context.dependOnInheritedWidgetOfExactType<_InheritedRouterController>() as _InheritedRouterController).router;
 
   /// Should build a stack of pages, based on the current location.
-  final List<Page<dynamic>> Function(UrlRouter router) onGeneratePages;
+  /// This is technically optional, as you could decide to implement your
+  /// own custom navigator inside the `builder`
+  final List<Page<dynamic>> Function(UrlRouter router)? onGeneratePages;
+
+  /// Wrap widgets around the [MaterialApp]s [Navigator] widget.
+  /// Primarily used for providing scaffolding like a `SideBar`, `TitleBar` around the page stack.
+  /// Also useful for when you would like to discard the provided [Navigator], and implement your own.
+  final Widget Function(UrlRouter router, Widget navigator)? builder;
 
   /// Optionally provide a way for the parent to implement custom `onPopPage` logic.
   final PopPageCallback? onPopPage;
@@ -23,9 +29,6 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
   /// Allows a parent class to protect or redirect certain routes. The callback can return the original url to allow the location change,
   /// or return a new url to redirect. If null is returned the location change will be ignored / blocked.
   final String? Function(UrlRouter router, String newLocation)? onChanging;
-
-  /// Wrap widgets around the Navigator object, providing scaffolding like a `SideBar`, `TitleBar` etc.
-  final Widget Function(UrlRouter router, Widget navigator)? scaffoldBuilder;
 
   /// Set from inside the build method, allows us to avoid passing context into delegates
   late BuildContext context;
@@ -82,7 +85,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
 
   @override
   Widget build(BuildContext context) {
-    final pages = onGeneratePages.call(this);
+    final pages = onGeneratePages?.call(this) ?? [];
     //TODO: Add more use cases for this, figure out if this is really what we want to do, or should we just always return false.
     bool handlePopPage(Route<dynamic> route, dynamic settings) {
       if (pages.length > 1 && route.didPop(settings)) {
@@ -97,8 +100,8 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
       onPopPage: onPopPage ?? handlePopPage,
       pages: pages,
     );
-    if (scaffoldBuilder != null) {
-      content = scaffoldBuilder!.call(this, content);
+    if (builder != null) {
+      content = builder!.call(this, content);
     }
     return _InheritedRouterController(router: this, child: content);
   }

@@ -1,6 +1,6 @@
 name: url_router
 description: An un-opinionated url-based Router implementation (Navigator 2.0)
-version: 0.1.1+3
+version: 0.2.0+4
 homepage: https://github.com/gskinnerTeam/flutter-url-router
 
 environment:
@@ -10,7 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  go_router: ^3.0.1
 
 dev_dependencies:
   flutter_test:

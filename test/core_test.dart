@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:url_router/src/url_router.dart';
-import 'package:url_router/src/url_router_extensions.dart';
+import 'package:url_router/url_router.dart';
 
 UrlRouter getSinglePageRouter([String? initial, String? Function(UrlRouter router, String newUrl)? onChanging]) =>
     UrlRouter(
         url: initial ?? '/',
-        scaffoldBuilder: (_, navigator) => Container(child: navigator),
+        builder: (_, navigator) => Container(child: navigator),
         onChanging: onChanging,
         onGeneratePages: (router) {
           return [MaterialPage(child: Center(child: Text(router.url)))];
@@ -15,7 +14,7 @@ UrlRouter getSinglePageRouter([String? initial, String? Function(UrlRouter route
 void main() {
   testWidgets('initial url', (tester) async {
     final router = getSinglePageRouter('/first');
-    await tester.pumpWidget(MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router));
+    await tester.pumpWidget(MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router));
     await tester.pumpAndSettle();
     expect(find.text('/first'), findsOneWidget);
   });
@@ -23,7 +22,7 @@ void main() {
   testWidgets('url changing', (tester) async {
     final router = getSinglePageRouter();
     await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
+      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
     await tester.pumpAndSettle();
     expect(find.text('/'), findsOneWidget);
@@ -36,7 +35,7 @@ void main() {
   testWidgets('query params', (tester) async {
     final router = getSinglePageRouter();
     await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
+      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
     router.url = '/home?search=0';
     expect(int.tryParse(router.queryParams['search']!), 0);
@@ -46,7 +45,7 @@ void main() {
   testWidgets('pop/push', (tester) async {
     final router = getSinglePageRouter();
     await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
+      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
     router.push('1');
     router.push('1');
@@ -62,7 +61,7 @@ void main() {
   testWidgets('query params', (tester) async {
     final router = getSinglePageRouter();
     await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
+      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
     router.queryParams = {'a': 'b'};
     expect(router.queryParams, {'a': 'b'});
@@ -99,7 +98,7 @@ void main() {
     // Create a router
     var router = getSinglePageRouter('/', (_, __) => null);
     await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
+      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
     router.url = 'new';
     // Blocked! :'(
@@ -107,7 +106,7 @@ void main() {
 
     router = getSinglePageRouter('/', (_, newUrl) => newUrl);
     await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
+      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
     router.url = 'new';
     // Allowed! :)
@@ -116,7 +115,7 @@ void main() {
 
   testWidgets('extensions', (tester) async {
     final router = getSinglePageRouter();
-    await tester.pumpWidget(MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router));
+    await tester.pumpWidget(MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router));
     await tester.pumpAndSettle();
     NavigatorState nav = tester.state(find.byType(Navigator));
     // Verify basic lookups are working
