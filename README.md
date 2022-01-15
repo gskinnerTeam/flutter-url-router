@@ -1,5 +1,6 @@
 <a href="https://github.com/gskinnerTeam/flutter-url-router/actions"><img src="https://github.com/gskinnerTeam/flutter-url-router/workflows/core-tests/badge.svg" alt="Build Status"></a>
 [![codecov](https://codecov.io/gh/gskinnerTeam/flutter-url-router/branch/master/graph/badge.svg?token=O5XM3W0094)](https://codecov.io/gh/gskinnerTeam/flutter-url-router)
+
 An un-opinionated url-based Router implementation (Navigator 2.0).
 
 ```dart
