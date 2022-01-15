@@ -32,20 +32,12 @@ dependencies:
 ```
 
 ## 🕹️ Usage
-* Declare a `UrlRouter` and implement the `onGeneratePages` method.
+* Declare a `UrlRouter` and implement the `onGeneratePages` method
 * Return a list of `Page` elements that represent your desired navigator stack
 * Implement the optional `onChanging` and `scaffoldBuilder` delegates
 ```dart
 late final router = UrlRouter(
-  onChanging: (router, newUrl) {
-    if (authorized == false) return '/';
-    return newUrl;
-  },
-  scaffoldBuilder: (router, navigator) {
-    return Row(
-      children: [ const SideBar(), Expanded(child: navigator) ],
-    );
-  },
+  // The Flutter `Navigator` expects a set of `Page` widgets
   onGeneratePages: (router) {
     return [
       // Main view is always present
@@ -56,6 +48,18 @@ late final router = UrlRouter(
       ]
     ];
   },
+  // Optional, protect or redirect urls
+  onChanging: (router, newUrl) {
+    if (authorized == false) return '/';
+    return newUrl;
+  },
+  // Optional, wrap some outer UI around navigator
+  scaffoldBuilder: (router, navigator) {
+    return Row(
+      children: [ const SideBar(), Expanded(child: navigator) ],
+    );
+  },
+
 );
 ```
 
@@ -92,10 +96,27 @@ final router = UrlRouter(
     },
 ```
 
-### Using custom Navigator(s)
-From within the `scaffoldBuilder` you can ignore the `Widget navigator` parameter, and instead provide one or more Navigators or sub-routers lower in the widget tree.
+### Handling full-screen modals
+When using scaffolding around the Navigator, it is common to want to show dialogs and bottom sheets that sit above that scaffolding. This is commonly handled by injecting a second Navigator, above the first:
+```dart
+final router = UrlRouter(
+    scaffoldBuilder: (router, navigator) {
+      return Navigator(
+        onGenerateRoute: (_) {
+          return PageRouteBuilder(
+            transitionDuration: Duration.zero,
+            pageBuilder: (_, __, ___){
+                return AppScaffold(body: navigator);
+            },
+          );
+        });
+...
+```
 
-`UrlRouter` at this point would be responsible only for reading and writing location, and calling scaffoldBuilder whenever it changes.
+### Using custom Navigator(s)
+From within the `scaffoldBuilder` you can ignore the `Widget navigator` parameter, and instead provide one or more navigators or sub-routers lower in the widget tree.
+
+`UrlRouter` at this point would be responsible only for reading and writing location, and calling `scaffoldBuilder` whenever it changes.
 
  ## 🐞 Bugs/Requests
 
