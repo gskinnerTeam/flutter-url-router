@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:url_router/src/url_router.dart';
+import 'package:url_router/src/url_router_extensions.dart';
 
 UrlRouter getSinglePageRouter([String? initial]) => UrlRouter(
     url: initial ?? '/',
@@ -38,6 +39,7 @@ void main() {
     router.url = '/home?search=0';
     await tester.pumpAndSettle();
     expect(int.tryParse(router.queryParams['search']!), 0);
+    expect(router.urlPath, '/home');
   });
 
   testWidgets('pop/push', (tester) async {
@@ -101,5 +103,25 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
     );
+  });
+
+  testWidgets('extensions', (tester) async {
+    final router = getSinglePageRouter();
+    await tester.pumpWidget(MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router));
+    await tester.pumpAndSettle();
+    NavigatorState nav = tester.state(find.byType(Navigator));
+    // Verify basic lookups are working
+    expect(nav.context.urlRouter, router);
+    expect(nav.context.url, router.url);
+    // Check that push works as expected
+    nav.context.urlPush('1');
+    nav.context.urlPush('1', {'a': 'b'});
+    expect(router.url, '/1/1?a=b');
+    // Check that pop works as expected
+    nav.context.urlPop({'c': 'd'});
+    expect(router.url, '/1?c=d');
+    // Assign url test
+    nav.context.url = '/new';
+    expect(router.url, '/new');
   });
 }

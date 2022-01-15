@@ -8,7 +8,7 @@ extension UrlRouterExtensions on BuildContext {
 
   set url(String value) => UrlRouter.of(this).url = value;
 
-  void urlPush(String value) => UrlRouter.of(this).push(value);
+  void urlPush(String value, [Map<String, String>? queryParams]) => UrlRouter.of(this).push(value, queryParams);
 
-  void urlPop() => UrlRouter.of(this).pop();
+  void urlPop([Map<String, String>? queryParams]) => UrlRouter.of(this).pop(queryParams);
 }
