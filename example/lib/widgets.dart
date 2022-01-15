@@ -38,9 +38,11 @@ class MainView extends StatelessWidget {
 }
 
 class ComposeView extends StatelessWidget {
+  const ComposeView({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: BackButton()));
+    return const Scaffold(body: Center(child: BackButton()));
   }
 }
 

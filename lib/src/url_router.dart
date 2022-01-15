@@ -37,7 +37,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
   }
 
   set queryParams(Map<String, String> value) {
-    url = _getUri()?.replace(queryParameters: value).toString() ?? _url;
+    url = _getUri().replace(queryParameters: value).toString();
   }
 
   @override
@@ -48,7 +48,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
   GlobalKey<NavigatorState>? get navigatorKey => _navKey;
   final GlobalKey<NavigatorState> _navKey = GlobalKey();
 
-  Uri? _getUri() => Uri.tryParse(_url);
+  Uri _getUri() => Uri.tryParse(_url) ?? Uri(path: _initialUrl);
 
   late final String _initialUrl;
   String _url = '';
@@ -64,7 +64,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
     }
   }
 
-  String get urlPath => _getUri()?.path ?? '';
+  String get urlPath => _getUri().path;
 
   void push(String path, [Map<String, String>? queryParams]) => _pushOrPop(path, queryParams);
 
@@ -111,7 +111,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
 
   void _pushOrPop([String? path, Map<String, String>? queryParams]) {
     // Create a new list, because `pathSegments` is an unmodifiable list
-    final segments = List.from(_getUri()?.pathSegments ?? []);
+    final segments = List.from(_getUri().pathSegments);
     // A null path indicates a pop vs push
     bool pop = path == null;
     if (pop && segments.length <= 1) return; // Can't pop if we're down to 1 segment

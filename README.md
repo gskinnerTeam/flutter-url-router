@@ -97,7 +97,7 @@ final router = UrlRouter(
 ```
 
 ### Handling full-screen modals
-When using scaffolding around the Navigator, it is common to want to show dialogs and bottom sheets that sit above that scaffolding. This is commonly handled by injecting a second Navigator, above the first:
+When using scaffolding around the Navigator, it is common to want to show dialogs and bottom sheets that sit above that scaffolding. This is commonly handled by injecting a second Navigator, above the one that is handled by the router:
 ```dart
 final router = UrlRouter(
     scaffoldBuilder: (router, navigator) {
