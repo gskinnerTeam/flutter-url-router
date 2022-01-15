@@ -73,7 +73,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
   @override
   Future<void> setInitialRoutePath(String configuration) {
     if (configuration == '/') {
-      configuration = _initialUrl;
+      configuration = _url = _initialUrl;
     }
     url = configuration;
     super.setInitialRoutePath(url);

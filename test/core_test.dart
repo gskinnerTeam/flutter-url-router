@@ -3,11 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:url_router/src/url_router.dart';
 import 'package:url_router/src/url_router_extensions.dart';
 
-UrlRouter getSinglePageRouter([String? initial]) => UrlRouter(
-    url: initial ?? '/',
-    onGeneratePages: (router) {
-      return [MaterialPage(child: Center(child: Text(router.url)))];
-    });
+UrlRouter getSinglePageRouter([String? initial, String? Function(UrlRouter router, String newUrl)? onChanging]) =>
+    UrlRouter(
+        url: initial ?? '/',
+        scaffoldBuilder: (_, navigator) => Container(child: navigator),
+        onChanging: onChanging,
+        onGeneratePages: (router) {
+          return [MaterialPage(child: Center(child: Text(router.url)))];
+        });
 
 void main() {
   testWidgets('initial url', (tester) async {
@@ -35,9 +38,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
     );
-    await tester.pumpAndSettle();
     router.url = '/home?search=0';
-    await tester.pumpAndSettle();
     expect(int.tryParse(router.queryParams['search']!), 0);
     expect(router.urlPath, '/home');
   });
@@ -47,11 +48,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
     );
-    await tester.pumpAndSettle();
     router.push('1');
     router.push('1');
     router.push('1');
-    await tester.pumpAndSettle();
     expect(router.url, '/1/1/1');
     router.pop();
     expect(router.url, '/1/1');
@@ -65,8 +64,6 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
     );
-    await tester.pumpAndSettle();
-
     router.queryParams = {'a': 'b'};
     expect(router.queryParams, {'a': 'b'});
     expect(router.url, '/?a=b');
@@ -99,10 +96,22 @@ void main() {
   });
 
   testWidgets('onChanging', (tester) async {
-    final router = getSinglePageRouter();
+    // Create a router
+    var router = getSinglePageRouter('/', (_, __) => null);
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
     );
+    router.url = 'new';
+    // Blocked! :'(
+    expect(router.url, '/');
+
+    router = getSinglePageRouter('/', (_, newUrl) => newUrl);
+    await tester.pumpWidget(
+      MaterialApp.router(routeInformationParser: UrlRouter.parser, routerDelegate: router),
+    );
+    router.url = 'new';
+    // Allowed! :)
+    expect(router.url, 'new');
   });
 
   testWidgets('extensions', (tester) async {
