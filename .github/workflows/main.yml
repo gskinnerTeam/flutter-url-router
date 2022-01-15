@@ -8,5 +8,10 @@ jobs:
     - uses: subosito/flutter-action@v1
       with:
         channel: 'stable' # or: 'dev' or 'beta'
-    - name: "Run Flutter Driver tests"
-      run: "flutter test"
+    - name: "Flutter Test"
+      run: flutter test --reporter expanded --coverage
+    - name: "Upload test coverage to Codecov"
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: coverage/lcov.info
