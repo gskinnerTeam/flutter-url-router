@@ -36,7 +36,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
-    // Test default intitial url
+    // Test default initial url
     await tester.settleAndExpectText('/');
     // Verify that basic url changing works
     router.url = '/second';
