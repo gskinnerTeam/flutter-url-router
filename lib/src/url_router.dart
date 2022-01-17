@@ -28,7 +28,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
   /// Optionally invoked just prior to the location being changed.
   /// Allows a parent class to protect or redirect certain routes. The callback can return the original url to allow the location change,
   /// or return a new url to redirect. If null is returned the location change will be ignored / blocked.
-  final String? Function(UrlRouter router, String newLocation)? onChanging;
+  String? Function(UrlRouter router, String newLocation)? onChanging;
 
   /// Set from inside the build method, allows us to avoid passing context into delegates
   late BuildContext context;

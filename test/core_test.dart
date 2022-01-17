@@ -2,21 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:url_router/url_router.dart';
 
-UrlRouter getSinglePageRouter([String? initial, String? Function(UrlRouter router, String newUrl)? onChanging]) =>
-    UrlRouter(
-        url: initial ?? '/',
-        builder: (_, navigator) => Container(child: navigator),
-        onChanging: onChanging,
-        onGeneratePages: (router) {
-          return [MaterialPage(child: Center(child: Text(router.url)))];
-        });
+extension on WidgetTester {
+  Future<void> settleAndExpectText(String s) async {
+    await pumpAndSettle();
+    expect(find.text(s), findsOneWidget);
+  }
+}
+
+typedef OnChangingCallback = String? Function(UrlRouter router, String newUrl);
+UrlRouter getSinglePageRouter([String? initial, OnChangingCallback? onChanging]) => UrlRouter(
+    url: initial ?? '/',
+    builder: (_, navigator) => Container(child: navigator),
+    onChanging: onChanging,
+    onGeneratePages: (router) {
+      return [
+        /// Create a single page that renders the current url
+        MaterialPage(
+          child: Center(child: Text(router.url)),
+        ),
+      ];
+    });
 
 void main() {
   testWidgets('initial url', (tester) async {
+    // Create router with an initial route and verify it is being set correctly
     final router = getSinglePageRouter('/first');
     await tester.pumpWidget(MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router));
-    await tester.pumpAndSettle();
-    expect(find.text('/first'), findsOneWidget);
+    await tester.settleAndExpectText('/first');
   });
 
   testWidgets('url changing', (tester) async {
@@ -24,22 +36,12 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
-    await tester.pumpAndSettle();
-    expect(find.text('/'), findsOneWidget);
+    // Test default intitial url
+    await tester.settleAndExpectText('/');
+    // Verify that basic url changing works
     router.url = '/second';
     await tester.pumpAndSettle();
-    expect(find.text('/'), findsNothing);
-    expect(find.text('/second'), findsOneWidget);
-  });
-
-  testWidgets('query params', (tester) async {
-    final router = getSinglePageRouter();
-    await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
-    );
-    router.url = '/home?search=0';
-    expect(int.tryParse(router.queryParams['search']!), 0);
-    expect(router.urlPath, '/home');
+    await tester.settleAndExpectText('/second');
   });
 
   testWidgets('pop/push', (tester) async {
@@ -50,12 +52,13 @@ void main() {
     router.push('1');
     router.push('1');
     router.push('1');
-    expect(router.url, '/1/1/1');
+    await tester.settleAndExpectText('/1/1/1');
     router.pop();
-    expect(router.url, '/1/1');
+    await tester.settleAndExpectText('/1/1');
     router.pop();
+    await tester.settleAndExpectText('/1');
     router.pop(); // call pop an extra time, to make sure it doesn't pop past the root segment
-    expect(router.url, '/1');
+    await tester.settleAndExpectText('/1');
   });
 
   testWidgets('query params', (tester) async {
@@ -63,54 +66,58 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
+    // Basics
+    router.url = '/home?search=0';
+    expect(router.urlPath, '/home');
+    expect(int.tryParse(router.queryParams['search']!), 0);
+    // Set query params
+    router.url = '/';
     router.queryParams = {'a': 'b'};
     expect(router.queryParams, {'a': 'b'});
-    expect(router.url, '/?a=b');
+    await tester.settleAndExpectText('/?a=b');
     // Do a simple push, should wipe the params
     router.push('1');
-    expect(router.url, '/1');
+    await tester.settleAndExpectText('/1');
     // Push another route, then pop with params
     router.push('1');
     router.pop({'a': 'b'});
-    expect(router.url, '/1?a=b');
+    await tester.settleAndExpectText('/1?a=b');
     // Replace params
     router.queryParams = {'aa': 'bb'};
-    expect(router.url, '/1?aa=bb');
+    await tester.settleAndExpectText('/1?aa=bb');
     // Add to existing params
     router.queryParams = router.queryParams..addAll({'c': 'd'});
-    expect(router.url, '/1?aa=bb&c=d');
+    await tester.settleAndExpectText('/1?aa=bb&c=d');
     // Push a route and replace params
     router.push('1', {'e': 'f'});
-    expect(router.url, '/1/1?e=f');
+    await tester.settleAndExpectText('/1/1?e=f');
     // Push route and carry params forward
     router.push('1', router.queryParams);
-    expect(router.url, '/1/1/1?e=f');
+    await tester.settleAndExpectText('/1/1/1?e=f');
     // Pop and carry params back
     router.pop(router.queryParams);
     router.pop(router.queryParams);
-    expect(router.url, '/1?e=f');
+    await tester.settleAndExpectText('/1?e=f');
     // Pop again and expect it not to have changed
     router.pop();
-    expect(router.url, '/1?e=f');
+    await tester.settleAndExpectText('/1?e=f');
   });
 
   testWidgets('onChanging', (tester) async {
-    // Create a router
-    var router = getSinglePageRouter('/', (_, __) => null);
+    // use an initial onChanging delegate that always returns null, blocking any changes to url
+    var router = getSinglePageRouter('/', (_, url) => null);
     await tester.pumpWidget(
       MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
     );
+    // Try change url, expect it to be blocked.
     router.url = 'new';
-    // Blocked! :'(
-    expect(router.url, '/');
+    await tester.settleAndExpectText('/');
 
-    router = getSinglePageRouter('/', (_, newUrl) => newUrl);
-    await tester.pumpWidget(
-      MaterialApp.router(routeInformationParser: UrlRouteParser(), routerDelegate: router),
-    );
+    // Swap onChanging delegate, and allow all changes
+    router.onChanging = (_, url) => url;
+    // Change it and expect it to work
     router.url = 'new';
-    // Allowed! :)
-    expect(router.url, 'new');
+    await tester.settleAndExpectText('new');
   });
 
   testWidgets('extensions', (tester) async {
@@ -124,12 +131,12 @@ void main() {
     // Check that push works as expected
     nav.context.urlPush('1');
     nav.context.urlPush('1', {'a': 'b'});
-    expect(router.url, '/1/1?a=b');
+    await tester.settleAndExpectText('/1/1?a=b');
     // Check that pop works as expected
     nav.context.urlPop({'c': 'd'});
-    expect(router.url, '/1?c=d');
+    await tester.settleAndExpectText('/1?c=d');
     // Assign url test
     nav.context.url = '/new';
-    expect(router.url, '/new');
+    await tester.settleAndExpectText('/new');
   });
 }
