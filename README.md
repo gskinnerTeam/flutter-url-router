@@ -121,7 +121,7 @@ final router = UrlRouter(
 ### Using custom Navigator(s)
 To provide a fully custom navigation implementation ignore the `Widget navigator` parameter from within the `builder` delegate:
 ```
-UrlRouter(builder: (router, navigator) => MyApp());
+UrlRouter(builder: (_, navigator) => MyApp());
 ```
 `UrlRouter` at this point would be responsible only for reading and writing location, and calling `builder` whenever it changes.
 
