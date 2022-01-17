@@ -33,6 +33,8 @@ dependencies:
 * Declare a `UrlRouter` and implement the `onGeneratePages` method
 * Return a list of `Page` elements that represent your desired navigator stack
 * Implement the optional `onChanging` and `builder` delegates
+
+Here is an intermediate example, showing a persistent `MainView` with a `SettingsView` that can sit on top. It also implements simple authentication and shows how to wrap some outer widgets around the Navigator:
 ```dart
 late final router = UrlRouter(
   // The Flutter `Navigator` expects a set of `Page` instances
@@ -48,13 +50,16 @@ late final router = UrlRouter(
   },
   // Optional, protect or redirect urls
   onChanging: (router, newUrl) {
-    if (authorized == false) return '/';
-    return newUrl;
+    if (authorized == false) return '/'; // redirect to main view
+    return newUrl; // allow change
   },
   // Optional, wrap some outer UI around navigator
   builder: (router, navigator) {
     return Row(
-      children: [ const SideBar(), Expanded(child: navigator) ],
+      children: [ 
+         const SideBar(), 
+         Expanded(child: navigator) 
+         ],
     );
   },
 
