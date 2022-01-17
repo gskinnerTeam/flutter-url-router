@@ -123,7 +123,7 @@ To provide a fully custom navigation implementation ignore the `Widget navigator
 ```
 UrlRouter(builder: (_, navigator) => MyApp());
 ```
-`UrlRouter` at this point would be responsible only for reading and writing location, and calling `builder` whenever it changes.
+`UrlRouter` at this point would be responsible only for reading and writing url, and calling `builder` whenever it changes.
 
 `MyApp` would be responsible for setting up a nested `Navigator`, or otherwise responding to `router.url`.
 
