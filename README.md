@@ -125,7 +125,7 @@ UrlRouter(builder: (router, navigator) => MyApp());
 ```
 `UrlRouter` at this point would be responsible only for reading and writing location, and calling `builder` whenever it changes.
 
-`MyApp` would be responsible for setting up a nested Navigator, or otherwise responding to `router.url`.
+`MyApp` would be responsible for setting up a nested `Navigator`, or otherwise responding to `router.url`.
 
  ## 🐞 Bugs/Requests
 
