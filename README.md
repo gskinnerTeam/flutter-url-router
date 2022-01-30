@@ -68,7 +68,7 @@ late final router = UrlRouter(
 
 As seen above you can use the `onChanging` delegate to redirect or protect certain urls.
 
-The `builder` can be used to wrap additional UI around the routers `navigator` widget, or it can be used to discard the `navigator` completely and implement a fully custom routing scheme (more on this below).
+The `builder` can be used to wrap additional UI around the routers `navigator` widget such as a `SideBar` or a `TitleBar`. It can also be used to discard the provided `navigator` and custom routing scheme of your choosing (more on this below).
 
 ### Controlling the url
 `UrlRouter` offers a small but powerful API to control the url:
