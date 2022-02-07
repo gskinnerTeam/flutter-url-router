@@ -117,7 +117,7 @@ class UrlRouter extends RouterDelegate<String> with ChangeNotifier, PopNavigator
     final segments = List.from(_getUri().pathSegments);
     // A null path indicates a pop vs push
     bool pop = path == null;
-    if (pop && segments.length <= 1) return; // Can't pop if we're down to 1 segment
+    if (pop && segments.length < 1) return; // Can't pop if we're down to 1 segment
     // Add or remove a segment
     pop ? segments.removeAt(segments.length - 1) : segments.add(path);
     var newUrl = '/${segments.join('/')}';
